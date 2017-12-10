@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { NgStyle } from '@angular/common';
+
 import { Http, Response,HttpModule } from '@angular/http';
 import 'rxjs';
 import 'rxjs/add/operator/map'
@@ -21,9 +23,12 @@ export class AppComponent implements OnInit{
   addressFix:any[] = [];
   message = 'Welcome!'
   statuses:any[] = [];
+  openOrClosed:any[] = [];
+  color:string = ''
 //vars for google maps
 	positions:string[] = []
   problem:string[] = []
+
 
 
 
@@ -64,13 +69,28 @@ export class AppComponent implements OnInit{
   					const ind = this.individualRecord[x];
   					const indexOfGreaterThan = ind;
    					this.addresses.push(indexOfGreaterThan);           
-            const responder =this.individualRecord[x+5]
+
             const status = this.individualRecord[x+1];
             const alive = this.individualRecord[x+2]
+//testing
+            const open = this.individualRecord[x+3]
+            console.log('test info is',open);
+            if( open && open.includes('closed')){
+              console.log('CLOSED')
+              this.openOrClosed.push('closed')
+            }else if(open && open.includes('active')){
+              console.log('OPEN');
+              this.openOrClosed.push('open')
+
+            }
+//testing
+            const responder =this.individualRecord[x+5]
+
+
             // console.log('status String is', status.substring(5,10))
             const statusSubstring = status.substring(0, 22).split(/</g);
 
-            console.log('Alive is ', alive);
+            // console.log('Alive is ', alive);
             this.statuses.push(statusSubstring);
 
 
@@ -82,6 +102,7 @@ export class AppComponent implements OnInit{
   			}
   			//remove first entry in array as it is blank
   			this.addresses.splice(0,1);
+        this.statuses.splice(0,1);
         // console.log('this.addresses is:', this.addresses);
   			for( var x = 0; x< this.addresses.length; x++){
   				//split off < to clean up back of address.
@@ -95,20 +116,54 @@ export class AppComponent implements OnInit{
      
 
 //get lat long from address
-			this.http.get('https://maps.googleapis.com/maps/api/geocode/json?address='+this.addresses[x]+', Seattle, WA').subscribe(
-//push lat long positions into positions array for array of markers
-							(data) =>{
-                  if(data.json().results[0].geometry != undefined){
+          this.getLatLong(this.addresses[x]);
 
-                     this.positions.push(data.json().results[0].geometry.location);
 
-                  }
-              }
-						)
+
+
+
+
+
+							// (data) =>{
+       //            if(data.json().results[0].geometry != undefined){
+       //              console.log('PUshing result')
+       //               this.positions.push(data.json().results[0].geometry.location);
+
+       //            }
+       //            else{
+       //              console.log('AN ERROR OCCURED')
+       //            }
+       //        },
+						// )
   			}
 
   		}
   	)
+  }
+
+  x:number=0
+  getLatLong(address){
+    var that = this;
+    setTimeout(function(){
+
+      that.http.get('https://maps.googleapis.com/maps/api/geocode/json?address='+address+', Seattle, WA').subscribe(
+//push lat long positions into positions array for array of markers
+
+          x=> that.positions.push(x.json().results[0].geometry.location),
+          // x => console.log('onNext: %s', x.json().results[0].geometry.location),
+         e => console.log('onError: %s', e),
+         () => console.log('onCompleted'));
+
+
+
+
+
+    }, this.x+=150)
+
+
+
+
+
   }
 
 //handle link for more info
@@ -116,7 +171,8 @@ export class AppComponent implements OnInit{
     console.log(i, 'clicked');
     const cut = this.problem[i];
     const cutIndex = cut.indexOf('<');
-    this.message = 'Responders: ' + cut.substring(0,cutIndex) +  '\nEvent: ' + this.statuses[i][0] ;
+    this.color = this.openOrClosed[i];
+    this.message = 'Responders: ' + cut.substring(0,cutIndex) +  '\nEvent: ' + this.statuses[i][0]  + '   Status:  ' + this.openOrClosed[i];
   }
 
 //google maps stuff and converting address into lat long

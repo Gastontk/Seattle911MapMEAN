@@ -21,7 +21,7 @@ exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/cs
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, ".open{\n\n\tcolor:green;\n}\n\n.closed{\n\tcolor: red;\n}", ""]);
 
 // exports
 
@@ -34,7 +34,7 @@ module.exports = module.exports.toString();
 /***/ "./src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = " <div class=\"container\"> \n  <h1>Map of Today's Seattle 911 Fire/Medical calls</h1>\n  <!-- <button class=\"btn btn-primary\" (click) = 'onSubmitToGoogle()'>Submit City for info from GoogleMaps</button> -->\n  <div class=\"row\">\n    <div class=\"col col-md-8\">\n      {{positions.length}} of {{addresses.length}} mapped\n          <ngui-map \n          class = 'img-responsive  '\n          style = 'height:800px;widtht:100px;'\n          zoom=\"11\" \n          center=\"47.65, -122.3321\" \n          (mapReady$)=\"onMapReady($event)\"\n          \n          (idle)=\"onIdle($event)\"\n          mapTypeId='ROADMAP'>\n            <marker *ngFor=\"let pos of positions;\" \n              [position]=\"pos\"\n              (initialized$)=\"onMarkerInit($event)\"></marker>\n        </ngui-map>\n\n    </div>\n\n\n\n\n    <div class=\"col col-md-4\">\n      <p style = 'border:solid black 1px;height: 50px;padding: 5px;'>{{message}}</p>\n     <!--  <h3>Number of Addresses Mapped: {{positions.length}}</h3>\n      <h3>Number of Addresses: {{addresses.length}}</h3>\n -->\n      <ul>\n       <a (click) = \"onclickAddress(i)\" *ngFor = 'let add of addresses; let i = index'> <li >{{add}}</li></a>\n      </ul>\n    </div>\n\n    \n  </div>\n\n\n  <!-- <div innerHTML=\"{{htmlBody}}\"></div> -->\n\n</div>\n\n\n<!-- (mapClick)=\"onMapClick($event)\" -->"
+module.exports = " <div class=\"container\"> \n  <h1>Map of Today's Seattle 911 Fire/Medical calls</h1>\n  <!-- <button class=\"btn btn-primary\" (click) = 'onSubmitToGoogle()'>Submit City for info from GoogleMaps</button> -->\n  <div class=\"row\">\n    <div class=\"col col-md-8\">\n      {{positions.length}} of {{addresses.length}} mapped\n          <ngui-map \n          class = 'img-responsive  '\n          style = 'height:800px;widtht:100px;'\n          zoom=\"11\" \n          center=\"47.65, -122.3321\" \n          (mapReady$)=\"onMapReady($event)\"\n          \n          (idle)=\"onIdle($event)\"\n          mapTypeId='ROADMAP'>\n            <marker *ngFor=\"let pos of positions;\" \n              [position]=\"pos\"\n              (initialized$)=\"onMarkerInit($event)\"></marker>\n        </ngui-map>\n\n    </div>\n\n\n\n\n    <div class=\"col col-md-4\">\n      <p style = 'border:solid black 1px;height: 50px;padding: 5px;' [ngClass] = \"color\">{{message}}</p>\n     <!--  <h3>Number of Addresses Mapped: {{positions.length}}</h3>\n      <h3>Number of Addresses: {{addresses.length}}</h3>\n -->\n      <ul>\n       <a (click) = \"onclickAddress(i)\" *ngFor = 'let add of addresses; let i = index'> <li >{{add}}</li></a>\n      </ul>\n    </div>\n\n    \n  </div>\n\n\n  <!-- <div innerHTML=\"{{htmlBody}}\"></div> -->\n\n</div>\n\n\n<!-- (mapClick)=\"onMapClick($event)\" -->"
 
 /***/ }),
 
@@ -70,9 +70,12 @@ var AppComponent = (function () {
         this.addressFix = [];
         this.message = 'Welcome!';
         this.statuses = [];
+        this.openOrClosed = [];
+        this.color = '';
         //vars for google maps
         this.positions = [];
         this.problem = [];
+        this.x = 0;
     }
     AppComponent.prototype.ngOnInit = function () {
         this.get911Info();
@@ -103,12 +106,24 @@ var AppComponent = (function () {
                     var ind = _this.individualRecord[x];
                     var indexOfGreaterThan = ind;
                     _this.addresses.push(indexOfGreaterThan);
-                    var responder = _this.individualRecord[x + 5];
                     var status = _this.individualRecord[x + 1];
                     var alive = _this.individualRecord[x + 2];
+                    //testing
+                    var open = _this.individualRecord[x + 3];
+                    console.log('test info is', open);
+                    if (open && open.includes('closed')) {
+                        console.log('CLOSED');
+                        _this.openOrClosed.push('closed');
+                    }
+                    else if (open && open.includes('active')) {
+                        console.log('OPEN');
+                        _this.openOrClosed.push('open');
+                    }
+                    //testing
+                    var responder = _this.individualRecord[x + 5];
                     // console.log('status String is', status.substring(5,10))
                     var statusSubstring = status.substring(0, 22).split(/</g);
-                    console.log('Alive is ', alive);
+                    // console.log('Alive is ', alive);
                     _this.statuses.push(statusSubstring);
                     // const indexOf = this.responder.indexOf('<');
                     // console.log('Index of < is', indexOf)
@@ -117,6 +132,7 @@ var AppComponent = (function () {
             }
             //remove first entry in array as it is blank
             _this.addresses.splice(0, 1);
+            _this.statuses.splice(0, 1);
             // console.log('this.addresses is:', this.addresses);
             for (var x = 0; x < _this.addresses.length; x++) {
                 //split off < to clean up back of address.
@@ -124,22 +140,37 @@ var AppComponent = (function () {
                 _this.addresses[x] = (_this.addresses[x].split(/</g)[0]);
                 // console.log('results, different positions', this.addresses[x].split(/</g)[3])
                 //get lat long from address
-                _this.http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + _this.addresses[x] + ', Seattle, WA').subscribe(
-                //push lat long positions into positions array for array of markers
-                function (data) {
-                    if (data.json().results[0].geometry != undefined) {
-                        _this.positions.push(data.json().results[0].geometry.location);
-                    }
-                });
+                _this.getLatLong(_this.addresses[x]);
+                // (data) =>{
+                //            if(data.json().results[0].geometry != undefined){
+                //              console.log('PUshing result')
+                //               this.positions.push(data.json().results[0].geometry.location);
+                //            }
+                //            else{
+                //              console.log('AN ERROR OCCURED')
+                //            }
+                //        },
+                // )
             }
         });
+    };
+    AppComponent.prototype.getLatLong = function (address) {
+        var that = this;
+        setTimeout(function () {
+            that.http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + address + ', Seattle, WA').subscribe(
+            //push lat long positions into positions array for array of markers
+            function (x) { return that.positions.push(x.json().results[0].geometry.location); }, 
+            // x => console.log('onNext: %s', x.json().results[0].geometry.location),
+            function (e) { return console.log('onError: %s', e); }, function () { return console.log('onCompleted'); });
+        }, this.x += 150);
     };
     //handle link for more info
     AppComponent.prototype.onclickAddress = function (i) {
         console.log(i, 'clicked');
         var cut = this.problem[i];
         var cutIndex = cut.indexOf('<');
-        this.message = 'Responders: ' + cut.substring(0, cutIndex) + '\nEvent: ' + this.statuses[i][0];
+        this.color = this.openOrClosed[i];
+        this.message = 'Responders: ' + cut.substring(0, cutIndex) + '\nEvent: ' + this.statuses[i][0] + '   Status:  ' + this.openOrClosed[i];
     };
     //google maps stuff and converting address into lat long
     AppComponent.prototype.onSubmitToGoogle = function () {
