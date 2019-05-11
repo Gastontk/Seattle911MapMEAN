@@ -1,24 +1,22 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { HttpModule } from '@angular/http';
+import { BrowserModule } from "@angular/platform-browser";
+import { NgModule } from "@angular/core";
+import { HttpModule } from "@angular/http";
 
+import { AppComponent } from "./app.component";
 
-import { AppComponent } from './app.component';
-
-
- import { NguiMapModule} from '@ngui/map';
-
+import { NguiMapModule } from "@ngui/map";
 
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     HttpModule,
-    NguiMapModule.forRoot({apiUrl: 'https://maps.google.com/maps/api/js?key=AIzaSyAKWE1JinLb5yLSoxHiEjiq1CMuOqbx_s4'}),
+    NguiMapModule.forRoot({
+      apiUrl:
+        "https://maps.google.com/maps/api/js?key=AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8"
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
