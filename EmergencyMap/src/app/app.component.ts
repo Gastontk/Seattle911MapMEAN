@@ -5,6 +5,9 @@ import { Http, Response, HttpModule } from "@angular/http";
 import "rxjs";
 import "rxjs/add/operator/map";
 // import { Ng}
+declare var require: any;
+var keys = require("./KEYS.ts");
+console.log("----------keys is---------", keys.default);
 
 @Component({
   selector: "app-root",
@@ -132,9 +135,11 @@ export class AppComponent implements OnInit {
     setTimeout(function() {
       that.http
         .get(
-          "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8&address=" +
+          `https://maps.googleapis.com/maps/api/geocode/json?key=${
+            keys.default.GOOGLE_MAPS
+          }&address=` +
             address +
-            ", Seattle, WA"
+            `, Seattle, WA`
         )
         .subscribe(
           //push lat long positions into positions array for array of markers
@@ -171,7 +176,9 @@ export class AppComponent implements OnInit {
   onSubmitToGoogle() {
     this.http
       .get(
-        "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8&address=9014 25th ave nw, seattle, wa"
+        `https://maps.googleapis.com/maps/api/geocode/json?key=${
+          keys.default.GOOGLE_MAPS
+        }&address=9014 25th ave nw, seattle, wa`
       )
       .subscribe(data => {
         // console.log("may", data.json().results[0].geometry.location);
@@ -196,10 +203,4 @@ export class AppComponent implements OnInit {
     this.positions.push(event.latLng);
     event.target.panTo(event.latLng);
   }
-
-  //Original google maps key
-  // AIzaSyCnuf3q7lupq_LcSqmcGR0NRM6aqSvZus8
-
-  // second js key
-  // AIzaSyAKWE1JinLb5yLSoxHiEjiq1CMuOqbx_s4
 }

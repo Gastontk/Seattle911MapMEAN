@@ -13,6 +13,19 @@ webpackEmptyContext.id = "./src async recursive";
 
 /***/ }),
 
+/***/ "./src/app/KEYS.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+// const GOOGLE_MAPS = "AIzaSyCnuf3q7lupq_LcSqmcGR0NRM6aqSvZus8";
+/* harmony default export */ __webpack_exports__["default"] = ({
+    GOOGLE_MAPS: "AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8"
+});
+//# sourceMappingURL=KEYS.js.map
+
+/***/ }),
+
 /***/ "./src/app/app.component.css":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -97,7 +110,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 
 
 
-// import { Ng}
+var keys = __webpack_require__("./src/app/KEYS.ts");
+console.log("----------keys is---------", keys.default);
 var AppComponent = (function () {
     function AppComponent(http) {
         var _this = this;
@@ -118,7 +132,7 @@ var AppComponent = (function () {
                 that = this;
                 setTimeout(function () {
                     that.http
-                        .get("https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8&address=" +
+                        .get("https://maps.googleapis.com/maps/api/geocode/json?key=" + keys.default.GOOGLE_MAPS + "&address=" +
                         address +
                         ", Seattle, WA")
                         .subscribe(
@@ -231,7 +245,7 @@ var AppComponent = (function () {
     //google maps stuff and converting address into lat long
     AppComponent.prototype.onSubmitToGoogle = function () {
         this.http
-            .get("https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDs8PY-g7xhKpbRJEGbdagYMY2Ubu1TBN8&address=9014 25th ave nw, seattle, wa")
+            .get("https://maps.googleapis.com/maps/api/geocode/json?key=" + keys.default.GOOGLE_MAPS + "&address=9014 25th ave nw, seattle, wa")
             .subscribe(function (data) {
             // console.log("may", data.json().results[0].geometry.location);
         });
